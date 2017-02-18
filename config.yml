@@ -1,0 +1,7 @@
+:connection:
+  :adapter: sqlite3
+  :database: listenin.db
+
+:replay_time: 60
+
+:upload_directory: uploads
