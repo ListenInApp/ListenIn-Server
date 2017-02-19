@@ -59,12 +59,12 @@ class App
       case params[:type]
         when 'Audio'
           handleUpload params[:audioFile] do |audioPath|
-            user.sendMessage(to: recipient, type: :Audio, audioPath: audioPath)
+            user.sendMessage(recipient, :Audio, audioPath)
           end
         when 'Still'
           handleUpload params[:audioFile] do |audioPath|
             handleUpload params[:stillFile] do |stillPath|
-              user.sendMessage(to: recipient, type: :Still, stillPath: stillPath, audioPath: audioPath)
+              user.sendMessage(recipient, :Still, stillPath, audioPath)
             end
           end
       end
