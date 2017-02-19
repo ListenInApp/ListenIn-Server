@@ -11,6 +11,7 @@ class App
     content_type :json
 
     verifyAccount params do |user|
+      id = params[:id]
       msg = user.message(id)
       unless msg.nil?
         {:status => "Success", :message => user.message(id)}.to_json

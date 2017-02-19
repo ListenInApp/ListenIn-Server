@@ -2,7 +2,7 @@ CREATE TABLE users (
   username TEXT PRIMARY KEY UNIQUE NOT NULL,
   displayName TEXT NOT NULL,
   email TEXT NOT NULL,
-  password TEXT NOT NULL -- (Hashed)
+  passwordHash TEXT NOT NULL
 );
 
 CREATE TABLE friendships (

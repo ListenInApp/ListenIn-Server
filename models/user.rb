@@ -1,40 +1,43 @@
 class User < ActiveRecord::Base
+  include BCrypt
+
+  def password
+    @password ||= Password.new(passwordHash)
+  end
+
+  def password=(newPassword)
+    @password = Password.create(newPassword)
+    self.passwordHash = @password
+  end
+
   # Methods for dealing with friends & Friend requests:
   def friends
-    columns = [:user2, :accepted]
-    Friendship.where(user1: self.username, accepted: "Y").order(:username).select(*columns)
+    columns = [:user2]
+    Friendship.where(user1: self.username, accepted: "Y").order(:user2).select(*columns)
   end
 
   def pendingFriendRequests
     columns = [:user1]
-    Friendship.where(user2: self.username, accepted: "P").order(:username).select(*columns)
+    Friendship.where(user2: self.username, accepted: "P").order(:user1).select(*columns)
   end
 
   def sentFriendRequests
     columns = [:user2, :accepted]
-    Friendship.where(user1: self.username).order(:username).select(*columns)
+    Friendship.where(user1: self.username).order(:user2).select(*columns)
   end
 
   def addFriend(username)
-    # Get any existing friend requests for that user
-    columns = [:accepted]
-    request = Friendship.where(user1: username, user2: self.username).select(*columns).first
- 
-    # State to change the "accepted" status to based on current request status
-    accepted = {"P" => "Y", "N" => "N"}
-    accepted.default = "P"
-
     # Don't add a duplicate friendship
-    unless Friendship.where(user1: self.username, user2: username).nil?
+    unless Friendship.exists?(user1: self.username, user2: username)
       Friendship.create({
         user1: self.username,
         user2: username,
-        accepted: accepted[request]
+        accepted: Friendship.exists?(user1: username, user2: self.username) ? "Y" : "P"
       })
 
       # If the other user already sent a friend request accept it
-      unless request.nil?
-        Friendship.where(user1: username, user2: self.username).update(accepted: "Y")
+      if Friendship.exists?(user1: username, user2: self.username)
+        Friendship.where(user1: username, user2: self.username).update_all(accepted: "Y")
       end
     end
   end
@@ -42,7 +45,7 @@ class User < ActiveRecord::Base
   # Methods for dealing with messages:
   def messages
     columns = [:id, :sender, :type, :stillPath, :audioPath, :sentAt, :openedAt, :viewed]
-    msgs = Messages.where(recipient: self.username).select(*columns)
+    msgs = Message.where(recipient: self.username).select(*columns)
 
     # Sort based on the most recently accessed message
     msgs.sort {|msg1, msg2| msg1.lastTime <=> msg2.lastTime}
@@ -52,7 +55,7 @@ class User < ActiveRecord::Base
     columns = [:sender, :type, :stillPath, :audioPath, :viewed]
     msg = Message.where(recipient: self.username, id: id).select(*columns).first
 
-    if msg.viewed < 2
+    if Message.exists?(recipient: self.username, id: id) && msg.viewed < 2
       msg # If the message hasn't been viewed+replayed then return it
     else
       nil # Otherwise there's no message to show
@@ -65,6 +68,7 @@ class User < ActiveRecord::Base
     unless msg.nil?
       if msg.viewed == 0
         msg.viewed = 1
+        msg.open
         Thread.new do
           sleep $CONFIG[:replay_time] # After the specified amount of time
           self.viewMessage(id) # Remove the ability to replay the message

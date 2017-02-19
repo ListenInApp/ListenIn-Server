@@ -4,10 +4,10 @@ require_relative 'messages'
 class App
   def verifyAccount(params, &action)
     user = User.where(username: params[:username]).first
-    if not user.nil? && user.password == params[:password]
+    if User.exists?(username: params[:username]) && user.password == params[:password]
       action.call user
     else
-      {:status => "Error", :message => "Incorrect username or password"}
+      {:status => "Error", :message => "Incorrect username or password"}.to_json
     end
   end
 

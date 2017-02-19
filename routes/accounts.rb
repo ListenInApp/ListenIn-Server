@@ -2,12 +2,14 @@ class App
   post '/createAccount' do
     content_type :json
     begin
-      User.create({
+      user = User.create({
         username: params[:username],
         displayName: params[:displayName],
         email: params[:email],
-        password: BCrypt::Password.create(params[:password])
+        passwordHash: "TEMP" # Update password below
       })
+      user.password = params[:password]
+      user.save!
       {:status => "Success"}.to_json
     rescue Exception => e
       {:status => "Error", :message => e}.to_json
@@ -19,7 +21,7 @@ class App
 
     verifyAccount params do |user|
       user.update(displayName: params[:displayName])
-       {:status => "Success"}.to_json
+      {:status => "Success"}.to_json
     end
   end
 
@@ -27,8 +29,9 @@ class App
     content_type :json
     
     verifyAccount params do |user|
-      user.update(password: params[:newPassword])
-       {:status => "Success"}.to_json
+      user.password = params[:newPassword]
+      user.save!
+      {:status => "Success"}.to_json
     end
   end
 
@@ -39,14 +42,14 @@ class App
 
   post '/resetPassword' do
     content_type :json
-     {:status => "Error", :message => "Not yet implemented"}.to_json
+    {:status => "Error", :message => "Not yet implemented"}.to_json
   end
 
   post '/getFriends' do
     content_type :json
 
     verifyAccount params do |user|
-       {:status => "Success", :friends => user.friends}.to_json
+      {:status => "Success", :friends => user.friends}.to_json
     end
   end
 
@@ -54,7 +57,7 @@ class App
     content_type :json
 
     verifyAccount params do |user|
-       {:status => "Success", :requests => user.pendingFriendRequests}.to_json
+      {:status => "Success", :requests => user.pendingFriendRequests}.to_json
     end
   end
 
@@ -62,7 +65,7 @@ class App
     content_type :json
 
     verifyAccount params do |user|
-       {:status => "Success", :requests => user.sentFriendRequests}.to_json
+      {:status => "Success", :requests => user.sentFriendRequests}.to_json
     end
   end
 
@@ -71,7 +74,7 @@ class App
 
     verifyAccount params do |user|
       user.addFriend(params[:friendUsername])
-       {:status => "Success"}.to_json
+      {:status => "Success"}.to_json
     end
   end
 end
