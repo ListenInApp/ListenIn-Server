@@ -75,7 +75,7 @@ class App
 
       recipients.each(createMessage)
 
-      {:status => "Success", :messages => user.messages}.to_json
+      {:status => "Success"}.to_json
     end
   end
 end
