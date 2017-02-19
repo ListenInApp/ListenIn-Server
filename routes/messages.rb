@@ -34,7 +34,7 @@ class App
     content_type :json
 
     verifyAccount params do |user|
-      recipients = params[:to]
+      recipient = params[:to]
       
       def handleUpload(file, &block)
         # Find a unique string for the filename in the upload directory
@@ -56,24 +56,18 @@ class App
         block.call filename
       end
 
-      createMessage = case params[:type]
+      case params[:type]
         when 'Audio'
           handleUpload params[:audioFile] do |audioPath|
-            Proc.new do |recipient|
-              user.sendMessage(to: recipient, type: :Audio, audioPath: audioPath)
-            end
+            user.sendMessage(to: recipient, type: :Audio, audioPath: audioPath)
           end
         when 'Still'
           handleUpload params[:audioFile] do |audioPath|
             handleUpload params[:stillFile] do |stillPath|
-              Proc.new do |recipient|
-                user.sendMessage(to: recipient, type: :Still, stillPath: stillPath, audioPath: audioPath)
-              end
+              user.sendMessage(to: recipient, type: :Still, stillPath: stillPath, audioPath: audioPath)
             end
           end
       end
-
-      recipients.each(createMessage)
 
       {:status => "Success"}.to_json
     end
