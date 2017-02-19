@@ -29,7 +29,5 @@ end
 ActiveRecord::Base.establish_connection($CONFIG[:connection])
 
 class App < Sinatra::Base
-  user Rack::SSL
-
- require_relative 'routes/main'
+  require_relative 'routes/main'
 end

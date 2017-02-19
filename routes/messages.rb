@@ -3,7 +3,7 @@ class App
     content_type :json
 
     verifyAccount params do |user|
-      JSON.generate {:status => "Success", :messages => user.messages}
+      {:status => "Success", :messages => user.messages}.to_json
     end
   end
 
@@ -13,19 +13,19 @@ class App
     verifyAccount params do |user|
       msg = user.message(id)
       unless msg.nil?
-        JSON.generate {:status => "Success", :message => user.message(id)}
+        {:status => "Success", :message => user.message(id)}.to_json
       else
-        JSON.generate {:status => "Error", :message => "That message does not exist"}
+        {:status => "Error", :message => "That message does not exist"}.to_json
+      end
     end
   end
 
   post '/viewMessage' do
     content_type :json
 
-
     verifyAccount params do |user|
       user.viewMessage(params[:id])
-      JSON.generate {:status => "Success"}
+      {:status => "Success"}.to_json
     end
   end
 
@@ -49,7 +49,7 @@ class App
             f.write(file[:tempfile].read)
           end
         rescue Exception => e
-          JSON.generate {:success => "Error", :message => "Could not upload message"}
+          {:success => "Error", :message => "Could not upload message"}.to_json
         end
 
         block.call filename
@@ -58,22 +58,23 @@ class App
       createMessage = case params[:type]
         when 'Audio'
           handleUpload params[:audioFile] do |audioPath|
-            do |recipient|
+            Proc.new do |recipient|
               user.sendMessage(to: recipient, type: :Audio, audioPath: audioPath)
             end
           end
         when 'Still'
           handleUpload params[:audioFile] do |audioPath|
             handleUpload params[:stillFile] do |stillPath|
-            do |recipient|
-              user.sendMessage(to: recipient, type: :Still, stillPath: stillPath, audioPath: audioPath)
+              Proc.new do |recipient|
+                user.sendMessage(to: recipient, type: :Still, stillPath: stillPath, audioPath: audioPath)
+              end
             end
           end
       end
 
       recipients.each(createMessage)
 
-      JSON.generate {:status => "Success", :messages => user.messages}
+      {:status => "Success", :messages => user.messages}.to_json
     end
   end
 end

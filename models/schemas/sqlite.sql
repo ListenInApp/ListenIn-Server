@@ -14,15 +14,15 @@ CREATE TABLE friendships (
 );
 
 CREATE TABLE messages (
-  id INTEGER AUTOINCREMENT PRIMARY KEY UNIQUE NOT NULL,
-  to TEXT NOT NULL, -- The user receiving the message
-  from TEXT NOT NULL, -- The user who sent the message
-  type TEXT CHAR(1) NOT NULL, -- Either 'S' (still image) or 'A' (audio only)
-  stillPath TEXT, -- Nullable file path to still image
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  recipient TEXT NOT NULL, -- The user receiving the message
+  sender TEXT NOT NULL, -- The user who sent the message
+  type CHAR(1) NOT NULL, -- Either 'S' (still image) or 'A' (audio only)
+  stillPath TEXT DEFAULT NULL, -- Nullable file path to still image
   audioPath TEXT NOT NULL, -- Mandatory file path to audio clip
-  sentAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Time at which the message was sent
-  openedAt DATETIME DEFAULT NULL, -- Time at which it was first opened
+  sentAt DATETIME NOT NULL, -- Time at which the message was sent
+  openedAt DATETIME DEFAULT CURRENT_TIMESTAMP, -- Time at which it was first opened
   viewed INT DEFAULT 0, -- Number of times viewed (0|1 => keep, 2 => replay then delete)
-  FOREIGN KEY(to) REFERENCES users(username),
-  FOREIGN KEY(from) REFERENCES users(username)
+  FOREIGN KEY(recipient) REFERENCES users(username),
+  FOREIGN KEY(sender) REFERENCES users(username)
 );

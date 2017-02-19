@@ -41,16 +41,16 @@ class User < ActiveRecord::Base
 
   # Methods for dealing with messages:
   def messages
-    columns = [:id, :from, :type, :stillPath, :audioPath, :sentAt, :openedAt, :viewed]
-    msgs = Messages.where(to: self.username).select(*columns)
+    columns = [:id, :sender, :type, :stillPath, :audioPath, :sentAt, :openedAt, :viewed]
+    msgs = Messages.where(recipient: self.username).select(*columns)
 
     # Sort based on the most recently accessed message
     msgs.sort {|msg1, msg2| msg1.lastTime <=> msg2.lastTime}
   end
 
   def message(id)
-    columns = [:from, :type, :stillPath, :audioPath, :viewed]
-    msg = Message.where(to: self.username, id: id).select(*columns).first
+    columns = [:sender, :type, :stillPath, :audioPath, :viewed]
+    msg = Message.where(recipient: self.username, id: id).select(*columns).first
 
     if msg.viewed < 2
       msg # If the message hasn't been viewed+replayed then return it
@@ -80,16 +80,16 @@ class User < ActiveRecord::Base
     case type
       when :still
         Message.create({
-          to: username,
-          from: self.username,
+          recipient: username,
+          sender: self.username,
           type: "S",
           stillPath: stillPath,
           audioPath: audioPath
         })
       when :audio
         Message.create({
-          to: username,
-          from: self.username,
+          recipient: username,
+          sender: self.username,
           type: "A",
           audioPath: audioPath
         })
