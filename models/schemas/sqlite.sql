@@ -1,6 +1,6 @@
 CREATE TABLE users (
   username TEXT PRIMARY KEY UNIQUE NOT NULL,
-  displayname TEXT NOT NULL,
+  displayName TEXT NOT NULL,
   email TEXT NOT NULL,
   password TEXT NOT NULL -- (Hashed)
 );
